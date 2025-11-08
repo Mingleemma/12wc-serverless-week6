@@ -2,11 +2,12 @@ import boto3
 import time
 from datetime import datetime
 import os
-instances = os.environ['INSTANCE_ID']
-instances = [instances]
-region = 'us-west-2'
-# instances = ['i-08dede33e781b63b2']
-sns_topic_arn = 'arn:aws:sns:us-west-2:801387502566:EC2StartNotification'  # Replace with your SNS topic ARN
+
+# Environment variables
+instances = [os.environ['INSTANCE_ID']]
+region = os.environ.get('AWS_REGION', 'us-east-1')
+sns_topic_arn = os.environ.get('SNS_TOPIC_ARN')
+
 ec2 = boto3.client('ec2', region_name=region)
 sns = boto3.client('sns', region_name=region)
 
@@ -53,9 +54,10 @@ def lambda_handler(event, context):
         print(notification_message)
         print('Test Componets')
 
-    # #Publish the message to the SNS topic
-    # sns.publish(
-    #     TopicArn=sns_topic_arn,
-    #     Message=notification_message,
-    #     Subject='EC2 Instance Start Notification'
-    # )
+    # Publish the message to the SNS topic if configured
+    if sns_topic_arn:
+        sns.publish(
+            TopicArn=sns_topic_arn,
+            Message=notification_message,
+            Subject='EC2 Instance Start Notification'
+        )
